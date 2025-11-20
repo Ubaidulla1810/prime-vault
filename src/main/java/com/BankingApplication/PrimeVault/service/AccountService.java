@@ -3,14 +3,21 @@ package com.BankingApplication.PrimeVault.service;
 
 import com.BankingApplication.PrimeVault.dto.AccountDto;
 
+import java.util.List;
+
 
 public interface AccountService {
 
-    AccountDto createAccount(AccountDto account);
+    AccountDto createAccount(AccountDto accountDto);
 
     AccountDto getAccountById(Long id);
 
     AccountDto deposit(Long id,double amount);
 
     AccountDto withDraw(Long id,double amount);
+
+
+    List<AccountDto> getAllAccount();
+
+    void deleteById(Long id);
 }
