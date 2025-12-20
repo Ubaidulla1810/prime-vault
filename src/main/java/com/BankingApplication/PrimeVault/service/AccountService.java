@@ -1,23 +1,23 @@
 package com.BankingApplication.PrimeVault.service;
 
-
-import com.BankingApplication.PrimeVault.dto.AccountDto;
+import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
+import com.BankingApplication.PrimeVault.dto.AccountResponse;
+import com.BankingApplication.PrimeVault.dto.AmountRequest;
 
 import java.util.List;
 
-
 public interface AccountService {
 
-    AccountDto createAccount(AccountDto accountDto);
+    AccountResponse createAccount(AccountCreateRequest request);
 
-    AccountDto getAccountById(Long id);
+    AccountResponse getAccountById(Long id);
 
-    AccountDto deposit(Long id,double amount);
+    AccountResponse deposit(Long id, AmountRequest request);
 
-    AccountDto withDraw(Long id,double amount);
+    AccountResponse withdraw(Long id, AmountRequest request);
 
-
-    List<AccountDto> getAllAccount();
+    List<AccountResponse> getAllAccount();
 
     void deleteById(Long id);
 }
+

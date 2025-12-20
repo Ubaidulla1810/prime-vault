@@ -1,28 +1,25 @@
 package com.BankingApplication.PrimeVault.mapper;
 
-import com.BankingApplication.PrimeVault.dto.AccountDto;
+import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
+import com.BankingApplication.PrimeVault.dto.AccountResponse;
 import com.BankingApplication.PrimeVault.entity.Account;
 
 public class AccountMapper {
 
-    public static Account mapToAccount(AccountDto accountDto) {
-
-        Account account = new Account(
-                accountDto.getId(),
-                accountDto.getAccountHolderName(),
-                accountDto.getBalance()
-        );
+    // Request → Entity
+    public static Account toEntity(AccountCreateRequest request) {
+        Account account = new Account();
+        account.setAccountHolderName(request.getAccountHolderName());
+        account.setBalance(0.0); // system rule
         return account;
     }
 
-    public static AccountDto mapToAccountDto(Account account){
-        AccountDto accountDto=new AccountDto(
+    // Entity → Response
+    public static AccountResponse toResponse(Account account) {
+        return new AccountResponse(
                 account.getId(),
                 account.getAccountHolderName(),
                 account.getBalance()
         );
-        return accountDto;
-
     }
-
 }

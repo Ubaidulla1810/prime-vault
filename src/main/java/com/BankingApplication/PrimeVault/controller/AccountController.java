@@ -1,15 +1,16 @@
 package com.BankingApplication.PrimeVault.controller;
 
-import com.BankingApplication.PrimeVault.dto.AccountDto;
+import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
+import com.BankingApplication.PrimeVault.dto.AccountResponse;
+import com.BankingApplication.PrimeVault.dto.AmountRequest;
 import com.BankingApplication.PrimeVault.service.AccountService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -20,37 +21,32 @@ public class AccountController {
 
 
     @PostMapping
-    public ResponseEntity<AccountDto> createNewAccount(@RequestBody AccountDto accountDto) {
-        try {
-            accountService.createAccount(accountDto);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
+    public ResponseEntity<AccountResponse> createAccount(@Valid  @RequestBody AccountCreateRequest request) {
+        AccountResponse response= accountService.createAccount(request);
+        return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
-    @GetMapping("id/{id}")
-    public ResponseEntity<AccountDto> getAccountById(@PathVariable Long id) {
-        return new ResponseEntity<>(accountService.getAccountById(id), HttpStatus.OK);
+    @GetMapping("/{id}")
+    public ResponseEntity<AccountResponse> getAccount(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.getAccountById(id));
     }
 
     @PutMapping("/{id}/deposit")
-    public ResponseEntity<AccountDto> deposit(@PathVariable Long id, @RequestBody Map<String, Double> request) {
-
-        AccountDto amount = accountService.deposit(id, request.get("amount"));
-        return new ResponseEntity<>(amount, HttpStatus.OK);
+    public ResponseEntity<AccountResponse> deposit(@PathVariable Long id, @Valid @RequestBody AmountRequest request) {
+           AccountResponse response= accountService.deposit(id,request);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/withdraw")
-    public ResponseEntity<AccountDto> withDraw(@PathVariable Long id, @RequestBody Map<String, Double> request) {
-        AccountDto accountDto = accountService.withDraw(id, request.get("amount"));
-        return new ResponseEntity<>(accountDto, HttpStatus.OK);
+    public ResponseEntity<AccountResponse> withdraw(@PathVariable Long id,@Valid @RequestBody AmountRequest request) {
+        AccountResponse response = accountService.withdraw(id, request);
+        return ResponseEntity.ok(response);
     }
 
+
     @GetMapping("/all")
-    public ResponseEntity<List<AccountDto>> getAllAccounts() {
-        List<AccountDto> allAccount = accountService.getAllAccount();
+    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
+        List<AccountResponse> allAccount = accountService.getAllAccount();
         return new ResponseEntity<>(allAccount, HttpStatus.OK);
     }
 
