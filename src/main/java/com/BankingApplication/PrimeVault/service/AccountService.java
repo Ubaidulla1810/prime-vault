@@ -1,8 +1,6 @@
 package com.BankingApplication.PrimeVault.service;
 
-import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
-import com.BankingApplication.PrimeVault.dto.AccountResponse;
-import com.BankingApplication.PrimeVault.dto.AmountRequest;
+import com.BankingApplication.PrimeVault.dto.*;
 
 import java.util.List;
 
@@ -19,5 +17,7 @@ public interface AccountService {
     List<AccountResponse> getAllAccount();
 
     void deleteById(Long id);
+
+    TransferResponse transfer(TransferRequest request);
 }
 

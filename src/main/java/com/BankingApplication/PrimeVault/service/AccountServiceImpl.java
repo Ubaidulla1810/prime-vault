@@ -1,8 +1,6 @@
 package com.BankingApplication.PrimeVault.service;
 
-import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
-import com.BankingApplication.PrimeVault.dto.AccountResponse;
-import com.BankingApplication.PrimeVault.dto.AmountRequest;
+import com.BankingApplication.PrimeVault.dto.*;
 import com.BankingApplication.PrimeVault.entity.Account;
 import com.BankingApplication.PrimeVault.exceptions.AccountNotFoundException;
 import com.BankingApplication.PrimeVault.exceptions.InsufficientBalanceException;
@@ -42,7 +40,7 @@ public class AccountServiceImpl implements AccountService {
 
         log.info("start deposit | accountId={} | thread={}", id, Thread.currentThread().getName());
 
-        Account account = accountRepo.findByIdForUpdate(id);
+        Account account = accountRepo.findByIdForUpdate(id).orElseThrow(()->new AccountNotFoundException("Account does not exists"));
 
         log.info("lock | accountId={} | thread={}", id, Thread.currentThread().getName());
 
@@ -64,7 +62,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountResponse withdraw(Long id, AmountRequest request) {
 
         log.info("start withdraw | accountId={} | thread={}", id, Thread.currentThread().getName());
-        Account account = accountRepo.findByIdForUpdate(id);
+        Account account = accountRepo.findByIdForUpdate(id).orElseThrow(()->new AccountNotFoundException("Account does not exists"));
 
         log.info("lock | accountId={} | thread={}", id, Thread.currentThread().getName());
         if (account == null) {
@@ -101,5 +99,60 @@ public class AccountServiceImpl implements AccountService {
             throw new AccountNotFoundException("Account does not exists");
         }
         accountRepo.deleteById(id);
+    }
+
+
+    @Transactional
+    public TransferResponse transfer(TransferRequest request){
+
+        if (request.getAmount() <= 0) {
+            throw new IllegalArgumentException("Transfer amount must be positive");
+        }
+
+        if (request.getFromAccountId().equals(request.getToAccountId())){
+            throw new IllegalArgumentException("Cannot transfer to same account");
+        }
+
+        Long fromId=request.getFromAccountId();
+        Long toId=request.getToAccountId();
+
+
+//        here the deadlock prevention
+        Long firstLocked=Math.min(fromId,toId);
+        Long secondLocked=Math.max(fromId,toId);
+
+        Account first=
+                accountRepo.findByIdForUpdate(firstLocked).orElseThrow(()-> new AccountNotFoundException("Account does not exists:"+firstLocked));
+        Account second=
+                accountRepo.findByIdForUpdate(secondLocked).orElseThrow(()-> new AccountNotFoundException("Account does not exists:"+secondLocked));
+
+        Account from;
+        Account to;
+
+        if (first.getId().equals(fromId)){
+            from=first;
+            to=second;
+        }else {
+            from=second;
+            to=first;
+        }
+
+        if (from.getBalance() < request.getAmount()){
+            throw new InsufficientBalanceException("Insufficient balance");
+        }
+
+        from.setBalance(from.getBalance() - request.getAmount());
+        to.setBalance(to.getBalance() + request.getAmount());
+
+        accountRepo.save(from);
+        accountRepo.save(to);
+
+        return new TransferResponse(
+                from.getId(),
+                to.getId(),
+                request.getAmount(),
+                from.getBalance(),
+                to.getBalance()
+        );
     }
 }

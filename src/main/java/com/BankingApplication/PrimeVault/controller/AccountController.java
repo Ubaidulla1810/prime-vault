@@ -1,8 +1,6 @@
 package com.BankingApplication.PrimeVault.controller;
 
-import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
-import com.BankingApplication.PrimeVault.dto.AccountResponse;
-import com.BankingApplication.PrimeVault.dto.AmountRequest;
+import com.BankingApplication.PrimeVault.dto.*;
 import com.BankingApplication.PrimeVault.service.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +52,11 @@ public class AccountController {
     public ResponseEntity<?> deleteAccount(@PathVariable Long id) {
         accountService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/transfer")
+    public ResponseEntity<TransferResponse> transfer(@Valid @RequestBody TransferRequest request){
+        TransferResponse response = accountService.transfer(request);
+        return ResponseEntity.ok(response);
     }
 }
