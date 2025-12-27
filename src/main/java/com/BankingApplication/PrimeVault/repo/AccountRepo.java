@@ -9,9 +9,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AccountRepo extends JpaRepository<Account,Long> {
+public interface AccountRepo extends JpaRepository<Account, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-@Query("SELECT a FROM Account a WHERE a.id= :id")
+    @Query("SELECT a FROM Account a WHERE a.id = :id")
     Account findByIdForUpdate(@Param("id") Long id);
 }

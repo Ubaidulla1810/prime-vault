@@ -11,9 +11,6 @@ public class Account {
     @Column(name = "account_holder_name")
     private String accountHolderName;
 
-    @Version
-    private long version;
-
     private double balance;
 
 
@@ -50,11 +47,4 @@ public class Account {
         this.balance = balance;
     }
 
-    public long getVersion() {
-        return version;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
-    }
 }

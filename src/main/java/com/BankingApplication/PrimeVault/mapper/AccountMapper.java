@@ -6,7 +6,7 @@ import com.BankingApplication.PrimeVault.entity.Account;
 
 public class AccountMapper {
 
-    // Request → Entity
+    // Request --> Entity
     public static Account toEntity(AccountCreateRequest request) {
         Account account = new Account();
         account.setAccountHolderName(request.getAccountHolderName());
@@ -14,7 +14,7 @@ public class AccountMapper {
         return account;
     }
 
-    // Entity → Response
+    // Entity --> Response
     public static AccountResponse toResponse(Account account) {
         return new AccountResponse(
                 account.getId(),
