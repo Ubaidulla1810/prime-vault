@@ -8,7 +8,6 @@ public class AmountRequest {
     private double amount;
 
     public AmountRequest() {
-
     }
 
     public AmountRequest(double amount) {

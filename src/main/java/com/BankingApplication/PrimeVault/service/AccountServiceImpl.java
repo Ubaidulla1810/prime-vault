@@ -4,15 +4,19 @@ import com.BankingApplication.PrimeVault.dto.AccountCreateRequest;
 import com.BankingApplication.PrimeVault.dto.AccountResponse;
 import com.BankingApplication.PrimeVault.dto.AmountRequest;
 import com.BankingApplication.PrimeVault.entity.Account;
+import com.BankingApplication.PrimeVault.exceptions.AccountNotFoundException;
+import com.BankingApplication.PrimeVault.exceptions.InsufficientBalanceException;
 import com.BankingApplication.PrimeVault.mapper.AccountMapper;
 import com.BankingApplication.PrimeVault.repo.AccountRepo;
-import com.BankingApplication.PrimeVault.service.AccountService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
@@ -28,30 +32,59 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponse getAccountById(Long id) {
         Account account = accountRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account does not exist"));
+                .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
         return AccountMapper.toResponse(account);
     }
 
+    @Transactional
     @Override
     public AccountResponse deposit(Long id, AmountRequest request) {
-        Account account = accountRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account does not exist"));
 
-        account.setBalance(account.getBalance() + request.getAmount());
-        return AccountMapper.toResponse(accountRepo.save(account));
-    }
+        log.info("start deposit | accountId={} | thread={}", id, Thread.currentThread().getName());
 
-    @Override
-    public AccountResponse withdraw(Long id, AmountRequest request) {
-        Account account = accountRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account does not exist"));
+        Account account = accountRepo.findByIdForUpdate(id);
 
-        if (account.getBalance() < request.getAmount()) {
-            throw new RuntimeException("Insufficient balance");
+        log.info("lock | accountId={} | thread={}", id, Thread.currentThread().getName());
+
+        if (account == null) {
+            throw new AccountNotFoundException("Account does not exists");
         }
 
+        if (request.getAmount() <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        account.setBalance(account.getBalance() + request.getAmount());
+        Account saved=accountRepo.save(account);
+        log.info("end deposit | accountId={} | thread={}", id, Thread.currentThread().getName());
+        return AccountMapper.toResponse(saved);
+    }
+
+    @Transactional
+    @Override
+    public AccountResponse withdraw(Long id, AmountRequest request) {
+
+        log.info("start withdraw | accountId={} | thread={}", id, Thread.currentThread().getName());
+        Account account = accountRepo.findByIdForUpdate(id);
+
+        log.info("lock | accountId={} | thread={}", id, Thread.currentThread().getName());
+        if (account == null) {
+            throw new AccountNotFoundException("Account does not exists");
+        }
+
+        if (account.getBalance() < request.getAmount()) {
+            throw new InsufficientBalanceException("Insufficient balance");
+        }
+
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+
         account.setBalance(account.getBalance() - request.getAmount());
-        return AccountMapper.toResponse(accountRepo.save(account));
+        Account saved = accountRepo.save(account);
+        log.info("end withdraw | accountId={} | thread={}", id, Thread.currentThread().getName());
+        return AccountMapper.toResponse(saved);
     }
 
     @Override
@@ -64,6 +97,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void deleteById(Long id) {
+        if (!accountRepo.existsById(id)) {
+            throw new AccountNotFoundException("Account does not exists");
+        }
         accountRepo.deleteById(id);
     }
 }
