@@ -1,0 +1,39 @@
+
+version: "3.7"
+
+services:
+  mysql:
+    image: mysql:8.3
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: primevault_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - s-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - s-network
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+networks:
+  s-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
