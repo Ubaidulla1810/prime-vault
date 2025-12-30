@@ -107,6 +107,19 @@ Swagger provides:
 - Interactive API testing
 
 ------------------------------------------------------------------
+Swagger Overview  
+![Swagger Overview](docs/swagger-overview.png)
+
+Schemas
+![Swagger Schemas](docs/swagger-schemas.png)
+
+Account APIs  
+![Account](docs/swagger-accounts.png)
+
+Transaction History  
+![Transaction History](docs/swagger-transaction-history.png)
+
+------------------------------------------------------------------
 
 Running the Application with Docker
 
